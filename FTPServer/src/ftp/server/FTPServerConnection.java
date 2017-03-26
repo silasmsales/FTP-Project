@@ -94,7 +94,7 @@ public class FTPServerConnection extends Thread {
 
     private void commandLIST() {
         try {
-            File directory = new File("./");
+            File directory = new File(File.separator);
             File[] fileList = directory.listFiles();
             for (File file : fileList) {
                 if (file.isFile()) {
