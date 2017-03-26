@@ -1,24 +1,26 @@
 package ftp.server;
 
-import java.net.*;
+import java.io.IOException;
+import java.net.ServerSocket;
 
+/**
+ *
+ * @author silasmsales
+ */
 public class FTPServer {
 
-    public static void main(String args[]) {
-
+    public static void main(String[] args) {
         try {
             int port = Integer.parseInt(args[0]);
-
-            ServerSocket soc = new ServerSocket(port);
+            ServerSocket serverSocket = new ServerSocket(port);
             System.out.println("FTP Server iniciou na porta " + port);
             while (true) {
                 System.out.println("Esperando conexão ...");
-                ServerConection t = new ServerConection(soc.accept());
-
+                FTPServerConnection fTPServerConection = new FTPServerConnection(serverSocket.accept());
             }
-        } catch (Exception e) {
-            System.err.println("Não foi possível iniciar o servidor! " + e.getMessage());
+        } catch (IOException | NumberFormatException e) {
+            System.err.println("Não foi possível iniciar o servidor!");
         }
-
     }
+
 }

@@ -1,22 +1,30 @@
 package ftp.client;
 
-import java.net.*;
+import java.io.IOException;
+import java.net.Socket;
 
-class FTPClient {
+/**
+ *
+ * @author silasmsales
+ */
+public class FTPClient {
 
-    public static void main(String args[]) {
-
+    public static void main(String[] args) {
         try {
             String IPAddress = args[0];
             int port = Integer.parseInt(args[1]);
+            String username = args[2];
+            String password = args[3];
 
-            Socket soc = new Socket(IPAddress, port);
-            ClientConection t = new ClientConection(soc);
-            t.displayMenu();
+            Socket clientSocketConnection = new Socket(IPAddress, port);
 
-        } catch (Exception e) {
-            System.err.println("Não foi possível iniciar uma conexão! " + e.getMessage());
+            FTPClientConnection clientConection = new FTPClientConnection(clientSocketConnection, username, password);
+
+            clientConection.commandMenu();
+
+        } catch (IOException | NumberFormatException exception) {
+            System.err.println("Não foi possível se conectar ao servidor!");
         }
-
     }
+
 }
