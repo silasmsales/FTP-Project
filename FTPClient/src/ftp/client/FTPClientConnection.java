@@ -185,7 +185,7 @@ class FTPClientConnection {
 
             }
         } catch (IOException ex) {
-            System.err.println("Não foi possível enviar o arquivo.");
+            System.err.println("Não foi possível receber o arquivo.");
         }
     }
 
