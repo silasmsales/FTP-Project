@@ -94,7 +94,7 @@ public class FTPServerConnection extends Thread {
 
     private void commandLIST() {
         try {
-            File directory = new File(File.separator);
+            File directory = new File("./");
             File[] fileList = directory.listFiles();
             for (File file : fileList) {
                 if (file.isFile()) {
@@ -126,7 +126,7 @@ public class FTPServerConnection extends Thread {
                 } while (piece != -1);
                 fileInputStream.close();
                 dataConnectionOutputStream.writeUTF(SUCCESSFUL_ACTION);
-                System.out.println("Arquivo recebido com sucesso!");
+                System.out.println("Arquivo enviado com sucesso!");
             }
         } catch (IOException iOException) {
             System.err.println("Erro ao receber o aquivo!");
