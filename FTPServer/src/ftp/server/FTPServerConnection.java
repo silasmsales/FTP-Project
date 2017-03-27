@@ -92,6 +92,8 @@ public class FTPServerConnection extends Thread {
         }
     }
 
+    
+    
     private void commandLIST() {
         try {
             File directory = new File("./");
