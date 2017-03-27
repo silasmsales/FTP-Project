@@ -1,6 +1,5 @@
 package ftp.client;
 
-import com.sun.xml.internal.fastinfoset.util.StringArray;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -10,8 +9,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -118,7 +115,6 @@ class FTPClientConnection {
     private void commandLIST() {
         try {
             dataConnectionOutputStream.writeUTF(LIST);
-            StringArray listFile = new StringArray();
             String filename = dataConnectionInputStream.readUTF();
             
             while (!filename.equals(SUCCESSFUL_ACTION)) {                
