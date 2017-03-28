@@ -110,6 +110,7 @@ public class FTPServerConnection extends Thread {
     private void commandDELE(){
         try {
             log.writeLog(userClient, "Esperando pelo nome do arquivo...", FTPLogger.OUT);
+            log.writeLog(userClient, "Esperando pelo nome do arquivo...", FTPLogger.OUT);
             String filename = dataConnectionInputStream.readUTF();
             File file = new File(DIRECTORIES+userClient.getUsername()+"/"+filename);
             System.err.println(file);
