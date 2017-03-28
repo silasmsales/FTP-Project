@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -96,8 +98,6 @@ public class FTPServerConnection extends Thread {
         }
     }
 
-    
-    
     private void commandLIST() {
         try {
             File directory = new File("./");
@@ -183,21 +183,33 @@ public class FTPServerConnection extends Thread {
     }
 
     private boolean authenticate() {
+        FTPUsersList usersList = new FTPUsersList();
+        List<FTPUser> users = usersList.getUsersList();
+        String status = CONNECTION_CLOSE;
+        
         try {
+
             String username = dataConnectionInputStream.readUTF();
             String command = dataConnectionInputStream.readUTF();
             String password = dataConnectionInputStream.readUTF();
-            
+
             userClient.setUsername(username);
             userClient.setPassword(password);
-            userClient.setIPAddress((Inet4Address)serverSocketConection.getInetAddress());
+            userClient.setIPAddress((Inet4Address) serverSocketConection.getInetAddress());
 
-            if (userClient.getUsername().equals(USERNAME) && userClient.getPassword().equals(PASSWORD)) {
+            for (FTPUser user : users) {
+                if (userClient.getUsername().equals(user.getUsername()) && 
+                    userClient.getPassword().equals(user.getPassword())) {
+                    status = LOGGED_IN;
+                }
+            }
+
+            if (status.equals(LOGGED_IN)) {
                 System.out.println("Autenticado com sucesso!");
                 dataConnectionOutputStream.writeUTF(LOGGED_IN);
             } else {
-                dataConnectionOutputStream.writeUTF(CONNECTION_CLOSE);
                 System.err.println("Usuário e/ou senha incorreto(s)");
+                dataConnectionOutputStream.writeUTF(CONNECTION_CLOSE);
                 return closeConnection();
             }
 
