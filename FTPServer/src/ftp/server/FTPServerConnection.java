@@ -12,7 +12,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,12 +46,14 @@ public class FTPServerConnection extends Thread {
     private Socket serverSocketConection;
     private DataOutputStream dataConnectionOutputStream;
     private DataInputStream dataConnectionInputStream;
+    private FTPUser userClient;
 
     public FTPServerConnection(Socket serverSocketConection) {
         try {
             this.serverSocketConection = serverSocketConection;
             dataConnectionOutputStream = new DataOutputStream(this.serverSocketConection.getOutputStream());
             dataConnectionInputStream = new DataInputStream(this.serverSocketConection.getInputStream());
+            userClient = new FTPUser();
             System.out.println("FTP Client conectou com êxito.");
             start();
         } catch (IOException e) {
@@ -183,7 +187,12 @@ public class FTPServerConnection extends Thread {
             String username = dataConnectionInputStream.readUTF();
             String command = dataConnectionInputStream.readUTF();
             String password = dataConnectionInputStream.readUTF();
-            if (username.equals(USERNAME) && password.equals(PASSWORD)) {
+            
+            userClient.setUsername(username);
+            userClient.setPassword(password);
+            userClient.setIPAddress((Inet4Address)serverSocketConection.getInetAddress());
+            
+            if (userClient.getUsername().equals(USERNAME) && userClient.getPassword().equals(PASSWORD)) {
                 System.out.println("Autenticado com sucesso!");
                 dataConnectionOutputStream.writeUTF(LOGGED_IN);
             } else {
