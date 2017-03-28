@@ -44,7 +44,7 @@ public class FTPServerConnection extends Thread {
     private static final String RETR = "RETR";
     private static final String LIST = "LIST";
     private static final String DISCONNECT = "DISCONNECT";
-    
+
     private static final String DIRECTORIES = "./directories/";
 
     private Socket serverSocketConection;
@@ -121,7 +121,7 @@ public class FTPServerConnection extends Thread {
         try {
             System.out.println("Esperando pelo arquivo...");
             String filename = dataConnectionInputStream.readUTF();
-            File file = new File(filename);
+            File file = new File(DIRECTORIES +  userClient.getUsername() + "/" +filename);
             if (!file.exists()) {
                 dataConnectionOutputStream.writeUTF(FILE_NOT_FOUND);
             } else {
@@ -151,7 +151,7 @@ public class FTPServerConnection extends Thread {
                 System.out.println("Operação cancelada pelo cliente");
                 return;
             }
-            File file = new File(filename);
+            File file = new File(DIRECTORIES + userClient.getUsername() + "/" + filename);
             if (file.exists()) {
                 dataConnectionOutputStream.writeUTF(FILE_EXIST);
             } else {
@@ -188,7 +188,7 @@ public class FTPServerConnection extends Thread {
         FTPUsersList usersList = new FTPUsersList();
         List<FTPUser> users = usersList.getUsersList();
         String status = CONNECTION_CLOSE;
-        
+
         try {
 
             String username = dataConnectionInputStream.readUTF();
@@ -200,8 +200,8 @@ public class FTPServerConnection extends Thread {
             userClient.setIPAddress((Inet4Address) serverSocketConection.getInetAddress());
 
             for (FTPUser user : users) {
-                if (userClient.getUsername().equals(user.getUsername()) && 
-                    userClient.getPassword().equals(user.getPassword())) {
+                if (userClient.getUsername().equals(user.getUsername())
+                        && userClient.getPassword().equals(user.getPassword())) {
                     status = LOGGED_IN;
                 }
             }
