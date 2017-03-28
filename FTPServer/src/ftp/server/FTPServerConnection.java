@@ -44,6 +44,8 @@ public class FTPServerConnection extends Thread {
     private static final String RETR = "RETR";
     private static final String LIST = "LIST";
     private static final String DISCONNECT = "DISCONNECT";
+    
+    private static final String DIRECTORIES = "./directories/";
 
     private Socket serverSocketConection;
     private DataOutputStream dataConnectionOutputStream;
@@ -100,7 +102,7 @@ public class FTPServerConnection extends Thread {
 
     private void commandLIST() {
         try {
-            File directory = new File("./");
+            File directory = new File(DIRECTORIES.concat(userClient.getUsername()));
             File[] fileList = directory.listFiles();
             for (File file : fileList) {
                 if (file.isFile()) {
