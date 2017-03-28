@@ -51,7 +51,7 @@ public class FTPServerConnection extends Thread {
     private DataOutputStream dataConnectionOutputStream;
     private DataInputStream dataConnectionInputStream;
     private FTPUser userClient;
-    private FTPLog log;
+    private FTPLogger log;
             
     public FTPServerConnection(Socket serverSocketConection) {
         try {
@@ -60,7 +60,7 @@ public class FTPServerConnection extends Thread {
             dataConnectionInputStream = new DataInputStream(this.serverSocketConection.getInputStream());
             userClient = new FTPUser();
             
-            log = new FTPLog();
+            log = new FTPLogger();
                         
             start();
         } catch (IOException e) {
@@ -210,7 +210,7 @@ public class FTPServerConnection extends Thread {
             }
 
             if (status.equals(LOGGED_IN)) {
-                log.writeLog(userClient, "Autenticado com sucesso", FTPLog.OUT);
+                log.writeLog(userClient, "Autenticado com sucesso", FTPLogger.OUT);
                 dataConnectionOutputStream.writeUTF(LOGGED_IN);
             } else {
                 System.err.println("Usuário e/ou senha incorreto(s)");
