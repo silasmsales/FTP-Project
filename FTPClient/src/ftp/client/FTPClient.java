@@ -10,6 +10,7 @@ import java.net.Socket;
 public class FTPClient {
 
     public static void main(String[] args) {
+        FTPLogger log = new FTPLogger();
         try {
             String IPAddress = args[0];
             int port = Integer.parseInt(args[1]);
@@ -23,7 +24,7 @@ public class FTPClient {
             clientConection.commandMenu();
 
         } catch (IOException | NumberFormatException exception) {
-            System.err.println("Não foi possível se conectar ao servidor!");
+            log.writeLog("Não foi possível se conectar ao servidor!", FTPLogger.ERR);
         }
     }
 
