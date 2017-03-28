@@ -43,6 +43,7 @@ public class FTPServerConnection extends Thread {
     private static final String STOR = "STOR";
     private static final String RETR = "RETR";
     private static final String LIST = "LIST";
+    private static final String DELE = "DELE";
     private static final String DISCONNECT = "DISCONNECT";
 
     private static final String DIRECTORIES = "./directories/";
@@ -91,6 +92,9 @@ public class FTPServerConnection extends Thread {
                     case DISCONNECT:
                         stop = closeConnection();
                         break;
+                    case DELE:
+                        commandDELE();
+                        break;
                     default:
                         System.out.println("Comando não reconhecido!");
                 }
@@ -103,6 +107,25 @@ public class FTPServerConnection extends Thread {
         }
     }
 
+    private void commandDELE(){
+        try {
+            log.writeLog(userClient, "Esperando pelo nome do arquivo...", FTPLogger.OUT);
+            String filename = dataConnectionInputStream.readUTF();
+            File file = new File(DIRECTORIES+userClient.getUsername()+"/"+filename);
+            System.err.println(file);
+            if (!file.exists()) {
+                dataConnectionOutputStream.writeUTF(FILE_NOT_FOUND);
+                log.writeLog(userClient, "Arquivo não existe", FTPLogger.OUT);
+            }else{
+                file.delete();
+                dataConnectionOutputStream.writeUTF(SUCCESSFUL_ACTION);
+                log.writeLog(userClient, "Arquivo deletado com sucesso.", FTPLogger.OUT);
+            }
+        } catch (IOException ioe) {
+            log.writeLog(userClient, "Falha ao deletar arquivo.", FTPLogger.ERR);
+        }
+    }
+    
     private void commandLIST() {
         try {
             File directory = new File(DIRECTORIES.concat(userClient.getUsername()));
