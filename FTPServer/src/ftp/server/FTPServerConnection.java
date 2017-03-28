@@ -74,7 +74,6 @@ public class FTPServerConnection extends Thread {
         boolean stop = false;
         while (!stop) {
             try {
-                System.out.println("Esperando solicitação do cliente...");
                 String command = dataConnectionInputStream.readUTF();
                 switch (command) {
                     case USER:
