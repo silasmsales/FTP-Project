@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.Inet4Address;
 import java.net.Socket;
 
 /**
@@ -38,14 +39,15 @@ class FTPClientConnection {
     private DataInputStream dataConnectionInputStream;
     private DataOutputStream dataConnectionOutputStream;
     private BufferedReader bufferedReader;
-
+    private FTPUser userClient;
+    
     public FTPClientConnection(Socket clientSocketConection, String username, String password) {
         try {
             dataConnectionInputStream = new DataInputStream(clientSocketConection.getInputStream());
             dataConnectionOutputStream = new DataOutputStream(clientSocketConection.getOutputStream());
             bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-
-            authenticate(username, password);
+            userClient = new FTPUser(username, password, (Inet4Address)clientSocketConection.getInetAddress());
+            authenticate(userClient.getUsername(), userClient.getPassword());
 
         } catch (IOException iOException) {
             System.err.println("Não foi possível estabelecer uma conexão " + iOException.getMessage());
