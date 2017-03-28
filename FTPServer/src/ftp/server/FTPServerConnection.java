@@ -191,7 +191,7 @@ public class FTPServerConnection extends Thread {
             userClient.setUsername(username);
             userClient.setPassword(password);
             userClient.setIPAddress((Inet4Address)serverSocketConection.getInetAddress());
-            
+
             if (userClient.getUsername().equals(USERNAME) && userClient.getPassword().equals(PASSWORD)) {
                 System.out.println("Autenticado com sucesso!");
                 dataConnectionOutputStream.writeUTF(LOGGED_IN);
