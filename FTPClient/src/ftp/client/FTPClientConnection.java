@@ -31,6 +31,7 @@ class FTPClientConnection {
     private static final String STOR = "STOR";
     private static final String RETR = "RETR";
     private static final String LIST = "LIST";
+    private static final String DELE = "DELE";
     private static final String DISCONNECT = "DISCONNECT";
 
     private static final String YES = "S";
@@ -40,13 +41,13 @@ class FTPClientConnection {
     private DataOutputStream dataConnectionOutputStream;
     private BufferedReader bufferedReader;
     private FTPUser userClient;
-    
+
     public FTPClientConnection(Socket clientSocketConection, String username, String password) {
         try {
             dataConnectionInputStream = new DataInputStream(clientSocketConection.getInputStream());
             dataConnectionOutputStream = new DataOutputStream(clientSocketConection.getOutputStream());
             bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-            userClient = new FTPUser(username, password, (Inet4Address)clientSocketConection.getInetAddress());
+            userClient = new FTPUser(username, password, (Inet4Address) clientSocketConection.getInetAddress());
             authenticate(userClient.getUsername(), userClient.getPassword());
 
         } catch (IOException iOException) {
@@ -102,6 +103,9 @@ class FTPClientConnection {
                     case DISCONNECT:
                         commandDISCONNECT();
                         break;
+                    case DELE:
+                        commandDELETE();
+                        break;
                     default:
                         System.out.println("Comando não reconhecido!");
 
@@ -114,17 +118,36 @@ class FTPClientConnection {
         }
     }
 
+    private void commandDELETE() {
+        try {
+            dataConnectionOutputStream.writeUTF(DELE);
+            String filename;
+            System.out.println("Entre com o nome do arquivo a ser deletado : ");
+            filename = bufferedReader.readLine();
+            dataConnectionOutputStream.writeUTF(filename);
+            String reply = dataConnectionInputStream.readUTF();
+            if (reply.equals(FILE_NOT_FOUND)) {
+                System.out.println("Arquivo não encontrado no servidor.");
+            } else if (reply.equals(SUCCESSFUL_ACTION)) {
+                System.out.println("Arquivo deletado com sucesso.");
+            }
+
+        } catch (IOException ex) {
+            System.err.println("Não foi possível deletar o arquivo.");
+        }
+    }
+
     private void commandLIST() {
         try {
             dataConnectionOutputStream.writeUTF(LIST);
             String filename = dataConnectionInputStream.readUTF();
-            
-            while (!filename.equals(SUCCESSFUL_ACTION)) {                
+
+            while (!filename.equals(SUCCESSFUL_ACTION)) {
                 System.out.println(filename);
                 filename = dataConnectionInputStream.readUTF();
             }
             System.out.println("Arquivos listados com sucesso!");
-            
+
         } catch (IOException ex) {
             System.err.println("Erro ao listar os arquivos!");
         }
