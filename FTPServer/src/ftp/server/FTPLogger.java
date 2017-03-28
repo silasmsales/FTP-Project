@@ -19,12 +19,22 @@ public class FTPLogger {
     public void writeLog(FTPUser fTPUser, String message, int OUTPUT){
         switch (OUTPUT){
             case OUT:
-                System.out.println(getTimestamp()+"["+fTPUser.getIPAddress()+"@"+fTPUser.getUsername()+"]" + message);
+                System.out.println(getTimestamp()+"["+fTPUser.getUsername()+"@"+fTPUser.getIPAddress().getHostAddress()+"] " + message);
                 break;
             case ERR:
-                System.err.println(getTimestamp()+"["+fTPUser.getIPAddress()+"@"+fTPUser.getUsername()+"]" + message);
+                System.err.println(getTimestamp()+"["+fTPUser.getUsername()+"@"+fTPUser.getIPAddress().getHostAddress()+"] " + message);
                 break;
         }
     }
-    
+
+    public void writeLog(String message, int OUTPUT){
+        switch (OUTPUT){
+            case OUT:
+                System.out.println(getTimestamp() + message);
+                break;
+            case ERR:
+                System.err.println(getTimestamp() + message);
+                break;
+        }
+    }
 }
