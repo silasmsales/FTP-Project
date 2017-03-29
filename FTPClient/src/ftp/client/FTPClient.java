@@ -13,13 +13,15 @@ public class FTPClient {
         FTPLogger log = new FTPLogger();
         try {
             String IPAddress = args[0];
-            int port = Integer.parseInt(args[1]);
-            String username = args[2];
-            String password = args[3];
+            int portConnection = Integer.parseInt(args[1]);
+            int portDataTranfer = Integer.parseInt(args[2]);
+            String username = args[3];
+            String password = args[4];
 
-            Socket clientSocketConnection = new Socket(IPAddress, port);
+            Socket clientSocketConnection = new Socket(IPAddress, portConnection);
+            Socket clientSocketData = new Socket(IPAddress, portDataTranfer);
 
-            FTPClientConnection clientConection = new FTPClientConnection(clientSocketConnection, username, password);
+            FTPClientConnection clientConection = new FTPClientConnection(clientSocketConnection, clientSocketData, username, password);
 
             clientConection.commandMenu();
 
