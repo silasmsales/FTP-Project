@@ -1,4 +1,4 @@
-package ftp.server;
+package ftp.server.tool;
 
 import java.io.File;
 import java.io.FileNotFoundException;

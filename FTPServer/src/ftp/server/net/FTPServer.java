@@ -1,5 +1,6 @@
-package ftp.server;
+package ftp.server.net;
 
+import ftp.server.tool.FTPLogger;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;

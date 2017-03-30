@@ -1,4 +1,4 @@
-package ftp.server;
+package ftp.server.tool;
 
 import java.net.Inet4Address;
 

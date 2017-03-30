@@ -1,20 +1,25 @@
 package ftp.client;
 
+import ftp.client.tool.FTPUser;
+import ftp.client.tool.FileStream;
+import ftp.client.tool.FTPLogger;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Inet4Address;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JOptionPane;
 
 /**
  *
  * @author silasmsales
  */
-class FTPClientConnection {
+public class FTPClientConnection {
 
     private static final String CONNECTION_CLOSE = "426";
     private static final String LOGGED_IN = "230";
@@ -41,27 +46,36 @@ class FTPClientConnection {
     private DataInputStream dataInputStream;
     private DataOutputStream dataOutputStream;
     private BufferedReader bufferedReader;
+    private Socket clientSocketConnection;
+    private Socket clientSocketData;
     private FileStream fileStream;
     private FTPUser userClient;
     private FTPLogger log;
+    private boolean isConnected = false;
 
-    public FTPClientConnection(Socket clientSocketConection, Socket clientSocketData, String username, String password) {
+    public FTPClientConnection(Socket clientSocketConnection, Socket clientSocketData, String username, String password) {
         try {
-            connectionInputStream = new DataInputStream(clientSocketConection.getInputStream());
-            connectionOutputStream = new DataOutputStream(clientSocketConection.getOutputStream());
-            dataInputStream = new DataInputStream(clientSocketData.getInputStream());
-            dataOutputStream = new DataOutputStream(clientSocketData.getOutputStream());
-            
+            this.clientSocketConnection = clientSocketConnection;
+            this.clientSocketData = clientSocketData;
+            connectionInputStream = new DataInputStream(this.clientSocketConnection.getInputStream());
+            connectionOutputStream = new DataOutputStream(this.clientSocketConnection.getOutputStream());
+            dataInputStream = new DataInputStream(this.clientSocketData.getInputStream());
+            dataOutputStream = new DataOutputStream(this.clientSocketData.getOutputStream());
+
             bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-            userClient = new FTPUser(username, password, (Inet4Address) clientSocketConection.getInetAddress());
+            userClient = new FTPUser(username, password, (Inet4Address) clientSocketConnection.getInetAddress());
             fileStream = new FileStream(dataOutputStream, dataInputStream, userClient);
             log = new FTPLogger();
-    
+
             authenticate(userClient.getUsername(), userClient.getPassword());
 
         } catch (IOException iOException) {
             log.writeLog("Não foi possível estabelecer uma conexão " + iOException.getMessage(), FTPLogger.ERR);
         }
+    }
+
+    public boolean isConnected() {
+        return this.isConnected;
     }
 
     private void authenticate(String username, String password) throws IOException {
@@ -75,9 +89,11 @@ class FTPClientConnection {
 
             if (reply.equals(LOGGED_IN)) {
                 log.writeLog("Conexão estabelecida!", FTPLogger.OUT);
+                this.isConnected = true;
             } else {
                 log.writeLog("Usuário e/ou senha incorreto(s)", FTPLogger.ERR);
-                System.exit(1);
+                this.isConnected = false;
+                commandDISCONNECT();
             }
 
         } catch (IOException iOException) {
@@ -96,10 +112,10 @@ class FTPClientConnection {
 
                 switch (choice) {
                     case STOR:
-                        commandSTOR();
+                        commandSTOR("");
                         break;
                     case RETR:
-                        commandRETR();
+                        commandRETR("");
                         break;
                     case LIST:
                         commandLIST();
@@ -108,7 +124,7 @@ class FTPClientConnection {
                         commandDISCONNECT();
                         break;
                     case DELE:
-                        commandDELETE();
+                        commandDELETE("");
                         break;
                     default:
                         log.writeLog("Comando não reconhecido!", FTPLogger.OUT);
@@ -121,12 +137,9 @@ class FTPClientConnection {
         }
     }
 
-    private void commandDELETE() {
+    public void commandDELETE(String filename) {
         try {
             connectionOutputStream.writeUTF(DELE);
-            String filename;
-            log.writeLog("Entre com o nome do arquivo a ser deletado :", FTPLogger.OUT);
-            filename = bufferedReader.readLine();
             connectionOutputStream.writeUTF(filename);
             String reply = connectionInputStream.readUTF();
             if (reply.equals(FILE_NOT_FOUND)) {
@@ -134,28 +147,37 @@ class FTPClientConnection {
             } else if (reply.equals(SUCCESSFUL_ACTION)) {
                 log.writeLog("Arquivo deletado com sucesso.", FTPLogger.OUT);
             }
-
         } catch (IOException ex) {
             log.writeLog("Não foi possível deletar o arquivo.", FTPLogger.ERR);
         }
     }
 
-    private void commandLIST() {
+    public String[] commandLIST() {
+
+        String[] files = null;
         try {
+            List<String> fileList = new ArrayList<>();
+
             connectionOutputStream.writeUTF(LIST);
             String filename = connectionInputStream.readUTF();
 
             while (!filename.equals(SUCCESSFUL_ACTION)) {
-                System.out.println(filename);
+                fileList.add(filename);
                 filename = connectionInputStream.readUTF();
             }
+            files = new String[fileList.size()];
+            for (int i = 0; i < fileList.size(); i++) {
+                files[i] = fileList.get(i);
+            }
+
             log.writeLog("Arquivos listados com sucesso!", FTPLogger.OUT);
         } catch (IOException ex) {
             log.writeLog("Erro ao listar os arquivos!", FTPLogger.ERR);
         }
+        return files;
     }
 
-    private void commandDISCONNECT() {
+    public void commandDISCONNECT() {
         try {
             connectionOutputStream.writeUTF(DISCONNECT);
             String reply;
@@ -167,19 +189,16 @@ class FTPClientConnection {
                 connectionInputStream.close();
                 connectionOutputStream.close();
             }
-            System.exit(1);
         } catch (IOException ex) {
             log.writeLog("Erro ao disconectar do servidor!", FTPLogger.ERR);
         }
     }
 
-    private void commandRETR() {
+    public void commandRETR(String filename) {
         try {
             connectionOutputStream.writeUTF(RETR);
-            String filename;
-            log.writeLog("Entre com o nome do arquivo : ", FTPLogger.OUT);
-            filename = bufferedReader.readLine();
             connectionOutputStream.writeUTF(filename);
+
             String reply = connectionInputStream.readUTF();
             if (reply.equals(FILE_NOT_FOUND)) {
                 log.writeLog("Arquivo não encontrado no servidor.", FTPLogger.OUT);
@@ -187,15 +206,13 @@ class FTPClientConnection {
                 log.writeLog("Recebendo arquivo...", FTPLogger.OUT);
                 File file = new File(filename);
                 if (file.exists()) {
-                    String option;
-                    log.writeLog("Arquivo já existe localmente, deseja sobrescrever?(S/N)", FTPLogger.OUT);
-                    option = bufferedReader.readLine();
-                    if (option.equals(NO)) {
+                    int option = JOptionPane.showConfirmDialog(null, "Arquivo "+filename+" já existe, deseja sobescrever?", "Aviso", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                    if (option == JOptionPane.NO_OPTION) {
                         connectionOutputStream.flush();
                         return;
                     }
                 }
-                
+
                 fileStream.getFile(file);
 
                 if (connectionInputStream.readUTF().equals(SUCCESSFUL_ACTION)) {
@@ -208,11 +225,9 @@ class FTPClientConnection {
         }
     }
 
-    private void commandSTOR() {
+    public void commandSTOR(String filename) {
         try {
             connectionOutputStream.writeUTF(STOR);
-            log.writeLog("Nome do arquivo : ", FTPLogger.OUT);
-            String filename = bufferedReader.readLine();
 
             File file = new File(filename);
             if (!file.exists()) {
@@ -226,9 +241,8 @@ class FTPClientConnection {
             String reply = connectionInputStream.readUTF();
             switch (reply) {
                 case FILE_EXIST:
-                    log.writeLog("Arquivo já existe, deseja sobescrever?(S/N):", FTPLogger.OUT);
-                    String option = bufferedReader.readLine();
-                    if (option.equals(YES)) {
+                    int option = JOptionPane.showConfirmDialog(null, "Arquivo "+filename+" já existe, deseja sobescrever?", "Aviso", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                    if (option == JOptionPane.YES_OPTION) {
                         connectionOutputStream.writeUTF(FILE_STATUS_OK);
                     } else {
                         connectionOutputStream.writeUTF(ACTION_ABORTED);
@@ -240,16 +254,15 @@ class FTPClientConnection {
                     break;
             }
             log.writeLog("Enviando arquivo...", FTPLogger.OUT);
-            
+
             fileStream.sendFile(file);
-            
+
             if (connectionInputStream.readUTF().equals(SUCCESSFUL_ACTION)) {
                 log.writeLog("Enviado com sucesso!", FTPLogger.OUT);
             } else {
                 log.writeLog("Não foi possível completar a transação!", FTPLogger.OUT);
             }
 
-        
         } catch (IOException iOException) {
             log.writeLog("Erro ao enviar arquivo!", FTPLogger.ERR);
         }

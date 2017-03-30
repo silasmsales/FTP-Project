@@ -1,5 +1,9 @@
-package ftp.server;
+package ftp.server.net;
 
+import ftp.server.tool.FTPLogger;
+import ftp.server.tool.FTPUser;
+import ftp.server.tool.FTPUsersList;
+import ftp.server.tool.FileStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -44,15 +48,21 @@ public class FTPServerConnection extends Thread {
     private FTPUser userClient;
     private FTPLogger log;
     private Inet4Address myIPAddress;
-
-    public FTPServerConnection(Socket serverSocketConection, Socket serverSocketData) {
+    private Socket serverSocketConnection;
+    private Socket serverSocketData;
+    
+    public FTPServerConnection(Socket serverSocketConnection, Socket serverSocketData) {
         try {
-            connectionOutputStream = new DataOutputStream(serverSocketConection.getOutputStream());
-            connectionInputStream = new DataInputStream(serverSocketConection.getInputStream());
-            dataOutputStream = new DataOutputStream(serverSocketData.getOutputStream());
-            dataInputStream = new DataInputStream(serverSocketData.getInputStream());
+            
+            this.serverSocketConnection = serverSocketConnection;
+            this.serverSocketData = serverSocketData;
+            
+            connectionOutputStream = new DataOutputStream(this.serverSocketConnection.getOutputStream());
+            connectionInputStream = new DataInputStream(this.serverSocketConnection.getInputStream());
+            dataOutputStream = new DataOutputStream(this.serverSocketData.getOutputStream());
+            dataInputStream = new DataInputStream(this.serverSocketData.getInputStream());
 
-            myIPAddress = (Inet4Address) serverSocketConection.getInetAddress();
+            myIPAddress = (Inet4Address) serverSocketConnection.getInetAddress();
 
             log = new FTPLogger();
             userClient = new FTPUser();
@@ -211,7 +221,7 @@ public class FTPServerConnection extends Thread {
 
             for (FTPUser user : users) {
                 if (userClient.getUsername().equals(user.getUsername())
-                        && userClient.getPassword().equals(user.getPassword())) {
+                 && userClient.getPassword().equals(user.getPassword())) {
                     status = LOGGED_IN;
                 }
             }
@@ -238,6 +248,9 @@ public class FTPServerConnection extends Thread {
         dataOutputStream.close();
         connectionInputStream.close();
         connectionOutputStream.close();
+        serverSocketConnection.close();
+        serverSocketData.close();
+        
         log.writeLog(userClient, "Cliente desconectado com sucesso!", FTPLogger.OUT);
 
         return true;

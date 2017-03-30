@@ -1,4 +1,4 @@
-package ftp.server;
+package ftp.server.tool;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

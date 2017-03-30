@@ -1,4 +1,4 @@
-package ftp.client;
+package ftp.server.tool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

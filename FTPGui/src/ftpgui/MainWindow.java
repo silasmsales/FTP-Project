@@ -3,9 +3,7 @@ package ftpgui;
 import javax.swing.JFrame;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.FlowLayout;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -19,9 +17,9 @@ import javax.swing.ListSelectionModel;
  *
  * @author silasmsales
  */
-public class MainWindow extends JFrame {
+public class MainWindow extends JFrame{
 
-    private final BorderLayout layout;
+    private BorderLayout layout;
 
     private JTextField textUser;
     private JPasswordField textPassword;
@@ -37,7 +35,13 @@ public class MainWindow extends JFrame {
     
     
     public MainWindow() {
-        super("SalesZilla");
+        addGUIComponents();
+        
+        
+        
+    }
+
+    public void addGUIComponents(){
         layout = new BorderLayout(100, 100);
 
         textUser = new JTextField(40);
@@ -89,7 +93,7 @@ public class MainWindow extends JFrame {
         add(panelLogin, BorderLayout.NORTH);
         add(panelFiles, BorderLayout.CENTER);
         add(labelStatus, BorderLayout.SOUTH);
-
+        
     }
-
+    
 }

@@ -1,4 +1,4 @@
-package ftp.client;
+package ftp.client.tool;
 
 import java.net.Inet4Address;
 
