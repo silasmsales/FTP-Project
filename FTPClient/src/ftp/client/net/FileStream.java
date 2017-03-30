@@ -43,7 +43,7 @@ public class FileStream {
             status = true;
 
         } catch (IOException ex) {
-            log.writeLog(user, "Não foi possível transferir o arquivo!", FTPLogger.ERR);
+            log.writeLog(user, "Não foi possível transferir o arquivo !", FTPLogger.ERR);
             status = false;
         }
         return true;

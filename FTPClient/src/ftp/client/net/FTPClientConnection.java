@@ -51,6 +51,7 @@ public class FTPClientConnection {
     private FTPUser userClient;
     private FTPLogger log;
     private boolean isConnected = false;
+    private String serverIPAddress;
 
     public FTPClientConnection(Socket clientSocketConnection, Socket clientSocketData, String username, String password) {
         try {
@@ -66,10 +67,12 @@ public class FTPClientConnection {
             fileStream = new FileStream(dataOutputStream, dataInputStream, userClient);
             log = new FTPLogger();
 
+            serverIPAddress = this.clientSocketConnection.getInetAddress().getHostAddress();
+            
             authenticate(userClient.getUsername(), userClient.getPassword());
 
         } catch (IOException iOException) {
-            log.writeLog("Não foi possível estabelecer uma conexão " + iOException.getMessage(), FTPLogger.ERR);
+            log.writeLog("Não foi possível estabelecer uma conexão com " + serverIPAddress, FTPLogger.ERR);
         }
     }
 
@@ -87,7 +90,7 @@ public class FTPClientConnection {
             String reply = connectionInputStream.readUTF();
 
             if (reply.equals(LOGGED_IN)) {
-                log.writeLog("Conexão estabelecida!", FTPLogger.OUT);
+                log.writeLog("Conexão estabelecida com " + serverIPAddress, FTPLogger.OUT);
                 this.isConnected = true;
             } else {
                 log.writeLog("Usuário e/ou senha incorreto(s)", FTPLogger.ERR);
@@ -107,12 +110,12 @@ public class FTPClientConnection {
             connectionOutputStream.writeUTF(filename);
             String reply = connectionInputStream.readUTF();
             if (reply.equals(FILE_NOT_FOUND)) {
-                log.writeLog("Arquivo não encontrado no servidor.", FTPLogger.OUT);
+                log.writeLog("O arquivo \"" + filename + "\" não foi encontrado no servidor.", FTPLogger.OUT);
             } else if (reply.equals(SUCCESSFUL_ACTION)) {
-                log.writeLog("Arquivo deletado com sucesso.", FTPLogger.OUT);
+                log.writeLog("O arquivo \"" + filename + "\" foi deletado com sucesso do servidor.", FTPLogger.OUT);
             }
         } catch (IOException ex) {
-            log.writeLog("Não foi possível deletar o arquivo.", FTPLogger.ERR);
+            log.writeLog("Não foi possível deletar o arquivo do servidor.", FTPLogger.ERR);
         }
     }
 
@@ -147,14 +150,14 @@ public class FTPClientConnection {
             String reply;
             reply = connectionInputStream.readUTF();
             if (reply.equals(DISCONNECT)) {
-                log.writeLog("Disconectado do servidor.", FTPLogger.OUT);
+                log.writeLog("Desconectado do servidor " + serverIPAddress, FTPLogger.OUT);
                 dataInputStream.close();
                 dataOutputStream.close();
                 connectionInputStream.close();
                 connectionOutputStream.close();
             }
         } catch (IOException ex) {
-            log.writeLog("Erro ao disconectar do servidor!", FTPLogger.ERR);
+            log.writeLog("Erro ao desconectar do servidor!", FTPLogger.ERR);
         }
     }
 
@@ -165,12 +168,12 @@ public class FTPClientConnection {
 
             String reply = connectionInputStream.readUTF();
             if (reply.equals(FILE_NOT_FOUND)) {
-                log.writeLog("Arquivo não encontrado no servidor.", FTPLogger.OUT);
+                log.writeLog("O arquivo \"" + filename + "\" não foi encontrado no servidor.", FTPLogger.OUT);
             } else if (reply.equals(FILE_STATUS_OK)) {
-                log.writeLog("Recebendo arquivo...", FTPLogger.OUT);
+                log.writeLog("Recebendo o arquivo \"" + filename + "\" ...", FTPLogger.OUT);
                 File file = new File(filename);
                 if (file.exists()) {
-                    int option = JOptionPane.showConfirmDialog(null, "Arquivo "+filename+" já existe, deseja sobescrever?", "Aviso", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                    int option = JOptionPane.showConfirmDialog(null, "O arquivo \"" + filename + "\" já existe, deseja sobrescrever?", "Aviso", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                     if (option == JOptionPane.NO_OPTION) {
                         connectionOutputStream.flush();
                         return;
@@ -180,12 +183,12 @@ public class FTPClientConnection {
                 fileStream.getFile(file);
 
                 if (connectionInputStream.readUTF().equals(SUCCESSFUL_ACTION)) {
-                    log.writeLog("Arquivo recebido com sucesso!", FTPLogger.OUT);
+                    log.writeLog("O arquivo \"" + filename + "\" foi recebido com sucesso!", FTPLogger.OUT);
                 }
 
             }
         } catch (IOException ex) {
-            log.writeLog("Não foi possível receber o arquivo.", FTPLogger.ERR);
+            log.writeLog("Não foi possível receber o arquivo \"" + filename + "\".", FTPLogger.ERR);
         }
     }
 
@@ -195,7 +198,7 @@ public class FTPClientConnection {
 
             File file = new File(filename);
             if (!file.exists()) {
-                log.writeLog("Arquivo não existe!", FTPLogger.OUT);
+                log.writeLog("O arquivo \"" + filename + "\" não existe!", FTPLogger.OUT);
                 connectionOutputStream.writeUTF(FILE_NOT_FOUND);
                 return;
             }
@@ -205,7 +208,7 @@ public class FTPClientConnection {
             String reply = connectionInputStream.readUTF();
             switch (reply) {
                 case FILE_EXIST:
-                    int option = JOptionPane.showConfirmDialog(null, "Arquivo "+filename+" já existe, deseja sobescrever?", "Aviso", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                    int option = JOptionPane.showConfirmDialog(null, "O arquivo \"" + filename + "\" já existe, deseja sobrescrever?", "Aviso", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                     if (option == JOptionPane.YES_OPTION) {
                         connectionOutputStream.writeUTF(FILE_STATUS_OK);
                     } else {
@@ -217,12 +220,12 @@ public class FTPClientConnection {
                     connectionOutputStream.writeUTF(FILE_STATUS_OK);
                     break;
             }
-            log.writeLog("Enviando arquivo...", FTPLogger.OUT);
+            log.writeLog("Enviando o arquivo \"" + filename + "\" ...", FTPLogger.OUT);
 
             fileStream.sendFile(file);
 
             if (connectionInputStream.readUTF().equals(SUCCESSFUL_ACTION)) {
-                log.writeLog("Enviado com sucesso!", FTPLogger.OUT);
+                log.writeLog("O arquivo \"" + filename + "\" foi enviado com sucesso!", FTPLogger.OUT);
             } else {
                 log.writeLog("Não foi possível completar a transação!", FTPLogger.OUT);
             }

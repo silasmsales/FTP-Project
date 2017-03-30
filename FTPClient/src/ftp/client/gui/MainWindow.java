@@ -9,7 +9,6 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
@@ -34,7 +33,7 @@ import javax.swing.ListSelectionModel;
  *
  * @author silasmsales
  */
-public class MainWindow extends JFrame implements ActionListener, MouseListener {
+public final class MainWindow extends JFrame implements ActionListener, MouseListener {
 
     private FTPClientConnection clientConnection;
     private final FTPLogger logger;
@@ -51,8 +50,8 @@ public class MainWindow extends JFrame implements ActionListener, MouseListener 
     private JList listClient, listServer;
     private JButton buttonUpload, buttonDownload, buttonDelete;
 
-    private String[] clientFiles;
-    private String[] serverFiles = {"Sem arquivos para mostrar"};
+    private final String[] clientFiles;
+    private final String[] serverFiles = {"Sem arquivos para mostrar"};
 
     private final String ROOT = "./";
     public MainWindow() {
@@ -67,8 +66,8 @@ public class MainWindow extends JFrame implements ActionListener, MouseListener 
     public void addGUIComponents() {
         layout = new BorderLayout(50, 50);
 
-        textUser = new JTextField("silas", 25);
-        textPassword = new JPasswordField("abcd", 15);
+        textUser = new JTextField(25);
+        textPassword = new JPasswordField(15);
         textIPaddress = new JTextField("127.0.0.1", 10);
         textPortConnection = new JTextField("2021", 5);
         textPortData = new JTextField("2020", 5);
@@ -147,11 +146,10 @@ public class MainWindow extends JFrame implements ActionListener, MouseListener 
         for (File file : fileList) {
             if (file.isFile()) {
                 files[count++] = file.getName();
-            } else if (file.isDirectory()) {
-                files[count++] = file.getName() + "/";
             }
         }
-//        files = Arrays.copyOf(files, fileList.length - (fileList.length - count));
+        //Remove non files from Jlist
+        files = Arrays.copyOf(files, fileList.length - (fileList.length - count));
         return files;
     }
 
@@ -204,15 +202,15 @@ public class MainWindow extends JFrame implements ActionListener, MouseListener 
             int option;
 
             if (!filesFromServerToBeDeleted.isEmpty()) {
-                message += "  Remoto\n";
+                message += "  Remoto:\n";
                 for (Object filename : filesFromServerToBeDeleted) {
-                    message += "-" + (String) filename + "\n";
+                    message += " -" + (String) filename + "\n";
                 }
             }
             if (!filesFromClientToBeDeleted.isEmpty()) {
-                message += "\n  Local\n";
+                message += "\n  Local:\n";
                 for (Object filename : filesFromClientToBeDeleted) {
-                    message += "-" + (String) filename + "\n";
+                    message += " -" + (String) filename + "\n";
                 }
             }
 
@@ -227,7 +225,7 @@ public class MainWindow extends JFrame implements ActionListener, MouseListener 
                 for (Object filename : filesFromClientToBeDeleted) {
                     File file = new File((String) filename);
                     file.delete();
-                    logger.writeLog("Arquivo " + file.getName() + " deletado com sucesso", FTPLogger.OUT);
+                    logger.writeLog("O arquivo \"" + filename + "\" foi deletado localmente com sucesso", FTPLogger.OUT);
                 }
                 listClient.setListData(this.getLocalFiles(ROOT));
                 if (!filesFromServerToBeDeleted.isEmpty()) {
@@ -277,9 +275,6 @@ public class MainWindow extends JFrame implements ActionListener, MouseListener 
                 if (file.isFile()) {
                     clientConnection.commandSTOR(filename);
                     listClient.setListData(this.getLocalFiles(ROOT));
-                } else if (file.isDirectory()) {
-                    listClient.setListData(this.getLocalFiles(ROOT+filename));
-                    listClient.setListData(this.getLocalFiles(ROOT+filename));
                 }
                 listServer.setListData(clientConnection.commandLIST());
             }
@@ -289,8 +284,6 @@ public class MainWindow extends JFrame implements ActionListener, MouseListener 
                 File file = new File(filename);
                 if (!filename.contains("/")) {//Is a file
                     clientConnection.commandRETR(filename);
-                }else if (filename.contains("/")){//Is a folder
-                    logger.writeLog("Pasta", FTPLogger.OUT);
                 }
                 listClient.setListData(this.getLocalFiles(ROOT));
                 listServer.setListData(clientConnection.commandLIST());
