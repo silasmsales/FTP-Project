@@ -5,6 +5,7 @@ import ftp.client.tool.FTPLogger;
 import javax.swing.JFrame;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Scrollbar;
@@ -40,15 +41,15 @@ import sun.awt.WindowClosingSupport;
 public class MainWindow extends JFrame implements ActionListener {
 
     private FTPClientConnection clientConnection;
-    private FTPLogger logger;
+    private final FTPLogger logger;
     private Socket clientSocketConnection;
     private Socket clientSocketData;
 
     private BorderLayout layout;
-    private JLabel labelUser, labelPassword, labelIPaddress;
+    private JLabel labelUser, labelPassword;
     private JTextField textUser, textIPaddress, textPortConnection, textPortData;
     private JPasswordField textPassword;
-    private JLabel labelStatus;
+    private JTextArea textStatus;
     private JFlipButton buttonLogin;
     private JPanel panelLogin, panelFiles, panelButtons;
     private JList listClient, listServer;
@@ -79,7 +80,7 @@ public class MainWindow extends JFrame implements ActionListener {
         panelFiles = new JPanel();
         labelUser = new JLabel("Usuário");
         labelPassword = new JLabel("Senha");
-        labelStatus = new JLabel("Aguardando mudanças...");
+        textStatus = new JTextArea();
         listClient = new JList(clientFiles);
         listServer = new JList(serverFiles);
         buttonUpload = new JButton("Enviar >>");
@@ -104,13 +105,15 @@ public class MainWindow extends JFrame implements ActionListener {
         panelLogin.add(buttonLogin);
 
         listClient.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        listClient.setVisibleRowCount(35);
+        listClient.setVisibleRowCount(25);
         listClient.setFixedCellWidth(430);
 
         listServer.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        listServer.setVisibleRowCount(35);
+        listServer.setVisibleRowCount(25);
         listServer.setFixedCellWidth(430);
 
+        textStatus.setRows(8);
+        
         panelFiles.setLayout(new FlowLayout());
         panelFiles.add(new JScrollPane(listClient));
         panelButtons.add(buttonUpload, BorderLayout.NORTH);
@@ -121,7 +124,7 @@ public class MainWindow extends JFrame implements ActionListener {
 
         add(panelLogin, BorderLayout.NORTH);
         add(panelFiles, BorderLayout.CENTER);
-        add(labelStatus, BorderLayout.SOUTH);
+        add(new JScrollPane(textStatus), BorderLayout.SOUTH);
 
         addWindowListener(new WindowAdapter() {
             @Override
@@ -242,6 +245,9 @@ public class MainWindow extends JFrame implements ActionListener {
             }
         }
 
+    }
+    private void updateStatus(){
+        
     }
 
 }
