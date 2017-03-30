@@ -1,5 +1,7 @@
-package ftp.client.tool;
+package ftp.client.net;
 
+import ftp.client.tool.FTPLogger;
+import ftp.client.tool.FTPUser;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;

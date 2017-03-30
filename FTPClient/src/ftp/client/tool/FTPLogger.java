@@ -5,6 +5,7 @@
  */
 package ftp.client.tool;
 
+import ftp.client.gui.JTextLogger;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -17,6 +18,7 @@ public class FTPLogger {
 
     public static final int ERR = -1;
     public static final int OUT = 0;
+    public JTextLogger textLogger = JTextLogger.getInstance();
 
     private String getTimestamp() {
         DateFormat dateFormat = new SimpleDateFormat("'['HH:mm:ss']' ");
@@ -25,24 +27,33 @@ public class FTPLogger {
     }
 
     public void writeLog(FTPUser fTPUser, String message, int OUTPUT) {
+        String out = getTimestamp() + "[" + fTPUser.getUsername() + "@" + fTPUser.getIPAddress().getHostAddress() + "] " + message;
         switch (OUTPUT) {
             case OUT:
-                System.out.println(getTimestamp() + "[" + fTPUser.getUsername() + "@" + fTPUser.getIPAddress().getHostAddress() + "] " + message);
+                System.out.println(out);
                 break;
             case ERR:
-                System.err.println(getTimestamp() + "[" + fTPUser.getUsername() + "@" + fTPUser.getIPAddress().getHostAddress() + "] " + message);
+                System.err.println(out);
                 break;
         }
+        writeToTextLoggerStatus(out);
     }
 
     public void writeLog(String message, int OUTPUT) {
+        String out  = getTimestamp() + message;
         switch (OUTPUT) {
             case OUT:
-                System.out.println(getTimestamp() + message);
+                System.out.println(out);
                 break;
             case ERR:
-                System.err.println(getTimestamp() + message);
+                System.err.println(out);
                 break;
         }
+        writeToTextLoggerStatus(out);
     }
+    
+    private void writeToTextLoggerStatus(String message){
+        textLogger.setText(textLogger.getText() + message + "\n");
+    }
+    
 }

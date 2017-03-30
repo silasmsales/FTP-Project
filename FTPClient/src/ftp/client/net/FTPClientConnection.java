@@ -1,7 +1,6 @@
 package ftp.client.net;
 
 import ftp.client.tool.FTPUser;
-import ftp.client.tool.FileStream;
 import ftp.client.tool.FTPLogger;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -99,41 +98,6 @@ public class FTPClientConnection {
         } catch (IOException iOException) {
             log.writeLog("Erro ao autenticar o usuário!", FTPLogger.ERR);
             connectionOutputStream.writeUTF(DISCONNECT);
-        }
-    }
-
-    public void commandMenu() {
-        while (true) {
-            log.writeLog("Digite o comando : ", FTPLogger.OUT);
-            String choice;
-
-            try {
-                choice = bufferedReader.readLine();
-
-                switch (choice) {
-                    case STOR:
-                        commandSTOR("");
-                        break;
-                    case RETR:
-                        commandRETR("");
-                        break;
-                    case LIST:
-                        commandLIST();
-                        break;
-                    case DISCONNECT:
-                        commandDISCONNECT();
-                        break;
-                    case DELE:
-                        commandDELETE("");
-                        break;
-                    default:
-                        log.writeLog("Comando não reconhecido!", FTPLogger.OUT);
-                }
-
-            } catch (IOException iOException) {
-                log.writeLog("Opção inválida! Tente outra vez.", FTPLogger.ERR);
-            }
-
         }
     }
 

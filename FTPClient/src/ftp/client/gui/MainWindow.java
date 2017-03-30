@@ -49,7 +49,7 @@ public class MainWindow extends JFrame implements ActionListener {
     private JLabel labelUser, labelPassword;
     private JTextField textUser, textIPaddress, textPortConnection, textPortData;
     private JPasswordField textPassword;
-    private JTextArea textStatus;
+    private JTextLogger textStatus;
     private JFlipButton buttonLogin;
     private JPanel panelLogin, panelFiles, panelButtons;
     private JList listClient, listServer;
@@ -80,7 +80,7 @@ public class MainWindow extends JFrame implements ActionListener {
         panelFiles = new JPanel();
         labelUser = new JLabel("Usuário");
         labelPassword = new JLabel("Senha");
-        textStatus = new JTextArea();
+        textStatus = JTextLogger.getInstance();
         listClient = new JList(clientFiles);
         listServer = new JList(serverFiles);
         buttonUpload = new JButton("Enviar >>");
@@ -112,8 +112,6 @@ public class MainWindow extends JFrame implements ActionListener {
         listServer.setVisibleRowCount(25);
         listServer.setFixedCellWidth(430);
 
-        textStatus.setRows(8);
-        
         panelFiles.setLayout(new FlowLayout());
         panelFiles.add(new JScrollPane(listClient));
         panelButtons.add(buttonUpload, BorderLayout.NORTH);
