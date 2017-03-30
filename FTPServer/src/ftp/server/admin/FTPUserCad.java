@@ -39,10 +39,10 @@ public class FTPUserCad {
             
             Runtime.getRuntime().exec("rm -rf "+DIRECTORIES+"/"+username);
             
-            logger.writeLog("Usuário "+username+" deletado com sucesso.", FTPLogger.OUT);
+            logger.writeLog("O usuário \""+username+"\" foi deletado com sucesso.", FTPLogger.OUT);
             
         } catch (Exception iOException) {
-            logger.writeLog("Erro ao deleter o usuário "+username, 0);
+            logger.writeLog("Erro ao deletar o usuário \""+username+"\".", 0);
         }
     } 
     
@@ -58,7 +58,7 @@ public class FTPUserCad {
 
                 boolean success = (new File(DIRECTORIES + "/" + username)).mkdir();
                 if (success) {
-                    logger.writeLog("Usuário " + username + " cadastrado com sucesso", FTPLogger.OUT);
+                    logger.writeLog("O usuário \"" + username + "\" foi cadastrado com sucesso.", FTPLogger.OUT);
                 }
 
             }

@@ -16,7 +16,7 @@ public class FTPServer {
             ServerSocket serverSocketConnection = new ServerSocket(portConnection);
             ServerSocket serverSocketDataTransfer = new ServerSocket(portDataTransfer);
             
-            log.writeLog("FTP Server iniciou na porta " + portConnection, FTPLogger.OUT);
+            log.writeLog("FTP Server iniciado na porta " + portConnection, FTPLogger.OUT);
             while (true) {
                 log.writeLog("Esperando conexão ...", FTPLogger.OUT);
                 

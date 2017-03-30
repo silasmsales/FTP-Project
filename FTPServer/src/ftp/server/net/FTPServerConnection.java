@@ -113,16 +113,17 @@ public class FTPServerConnection extends Thread {
 
     private void commandDELE() {
         try {
+            log.writeLog(userClient, "Comando DELE recebido.", FTPLogger.OUT);
             log.writeLog(userClient, "Esperando pelo nome do arquivo...", FTPLogger.OUT);
             String filename = connectionInputStream.readUTF();
             File file = new File(DIRECTORIES + userClient.getUsername() + "/" + filename);
             if (!file.exists()) {
                 connectionOutputStream.writeUTF(FILE_NOT_FOUND);
-                log.writeLog(userClient, "Arquivo não existe", FTPLogger.OUT);
+                log.writeLog(userClient, "O arquivo \"" + filename + "\" não existe", FTPLogger.OUT);
             } else {
                 file.delete();
                 connectionOutputStream.writeUTF(SUCCESSFUL_ACTION);
-                log.writeLog(userClient, "Arquivo deletado com sucesso.", FTPLogger.OUT);
+                log.writeLog(userClient, "O arquivo \"" + filename + "\" foi deletado com sucesso do servidor.", FTPLogger.OUT);
             }
         } catch (IOException ioe) {
             log.writeLog(userClient, "Falha ao deletar arquivo.", FTPLogger.ERR);
@@ -138,8 +139,6 @@ public class FTPServerConnection extends Thread {
             for (File file : fileList) {
                 if (file.isFile()) {
                     connectionOutputStream.writeUTF(file.getName());
-                }else if(file.isDirectory()){
-                    connectionOutputStream.writeUTF(file.getName()+"/");
                 }
             }
             connectionOutputStream.writeUTF(SUCCESSFUL_ACTION);
@@ -164,7 +163,7 @@ public class FTPServerConnection extends Thread {
                 fileStream.sendFile(file);
 
                 connectionOutputStream.writeUTF(SUCCESSFUL_ACTION);
-                log.writeLog(userClient, "Arquivo enviado com sucesso!", FTPLogger.OUT);
+                log.writeLog(userClient, "O arquivo \"" + filename + "\" foi enviado com sucesso do servidor!", FTPLogger.OUT);
             }
         } catch (IOException iOException) {
             log.writeLog(userClient, "Erro ao receber o arquivo!", FTPLogger.ERR);
@@ -194,7 +193,7 @@ public class FTPServerConnection extends Thread {
                 case FILE_STATUS_OK:
                     fileStream.getFile(file);
                     connectionOutputStream.writeUTF(SUCCESSFUL_ACTION);
-                    log.writeLog(userClient, "Arquivo recebido com sucesso!", FTPLogger.OUT);
+                    log.writeLog(userClient, "O arquivo \"" + filename + "\" foi recebido com sucesso no servidor!", FTPLogger.OUT);
                     break;
                 case ACTION_ABORTED:
                     log.writeLog(userClient, "Ação cancelada pelo usuário.", FTPLogger.OUT);

@@ -14,13 +14,15 @@ public class FTPUsersList {
 
     private Scanner input;
     private List <FTPUser> usersList; 
+    private FTPLogger logger;
     
     public FTPUsersList() {
+        logger = new FTPLogger();
         try {
             input = new Scanner(new File("logins.txt"));
             usersList = new ArrayList<>();
         } catch (FileNotFoundException ex) {
-            System.err.println("Erro ao abrir arquivo com lista de usuários!");
+            logger.writeLog("Erro ao abrir arquivo com lista de usuários!", FTPLogger.ERR);
         }
     }
 
