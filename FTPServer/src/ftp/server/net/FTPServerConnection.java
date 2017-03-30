@@ -3,7 +3,6 @@ package ftp.server.net;
 import ftp.server.tool.FTPLogger;
 import ftp.server.tool.FTPUser;
 import ftp.server.tool.FTPUsersList;
-import ftp.server.tool.FileStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -139,6 +138,8 @@ public class FTPServerConnection extends Thread {
             for (File file : fileList) {
                 if (file.isFile()) {
                     connectionOutputStream.writeUTF(file.getName());
+                }else if(file.isDirectory()){
+                    connectionOutputStream.writeUTF(file.getName()+"/");
                 }
             }
             connectionOutputStream.writeUTF(SUCCESSFUL_ACTION);
