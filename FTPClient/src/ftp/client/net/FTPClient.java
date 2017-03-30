@@ -1,4 +1,4 @@
-package ftp.client;
+package ftp.client.net;
 
 import ftp.client.tool.FTPLogger;
 import java.io.IOException;

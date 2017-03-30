@@ -1,6 +1,6 @@
 package ftp.client.gui;
 
-import ftp.client.FTPClientConnection;
+import ftp.client.net.FTPClientConnection;
 import ftp.client.tool.FTPLogger;
 import javax.swing.JFrame;
 import java.awt.BorderLayout;

@@ -1,4 +1,4 @@
-package ftp.client;
+package ftp.client.net;
 
 import ftp.client.tool.FTPUser;
 import ftp.client.tool.FileStream;
