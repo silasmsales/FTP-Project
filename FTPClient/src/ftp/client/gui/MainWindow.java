@@ -5,19 +5,17 @@ import ftp.client.tool.FTPLogger;
 import javax.swing.JFrame;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Scrollbar;
-import java.awt.TextArea;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
@@ -31,14 +29,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import sun.awt.WindowClosingListener;
-import sun.awt.WindowClosingSupport;
 
 /**
  *
  * @author silasmsales
  */
-public class MainWindow extends JFrame implements ActionListener {
+public class MainWindow extends JFrame implements ActionListener, MouseListener {
 
     private FTPClientConnection clientConnection;
     private final FTPLogger logger;
@@ -58,11 +54,12 @@ public class MainWindow extends JFrame implements ActionListener {
     private String[] clientFiles;
     private String[] serverFiles = {"Sem arquivos para mostrar"};
 
+    private final String ROOT = "./";
     public MainWindow() {
 
         logger = new FTPLogger();
 
-        clientFiles = this.getLocalFiles();
+        clientFiles = this.getLocalFiles(ROOT);
         addGUIComponents();
 
     }
@@ -112,6 +109,9 @@ public class MainWindow extends JFrame implements ActionListener {
         listServer.setVisibleRowCount(25);
         listServer.setFixedCellWidth(430);
 
+        listClient.addMouseListener(this);
+        listServer.addMouseListener(this);
+
         panelFiles.setLayout(new FlowLayout());
         panelFiles.add(new JScrollPane(listClient));
         panelButtons.add(buttonUpload, BorderLayout.NORTH);
@@ -136,9 +136,10 @@ public class MainWindow extends JFrame implements ActionListener {
 
     }
 
-    private String[] getLocalFiles() {
+    
+    private String[] getLocalFiles(String folder) {
 
-        File directory = new File("./");
+        File directory = new File(folder);
         File[] fileList = directory.listFiles();
         String files[] = new String[fileList.length];
         int count = 0;
@@ -146,14 +147,17 @@ public class MainWindow extends JFrame implements ActionListener {
         for (File file : fileList) {
             if (file.isFile()) {
                 files[count++] = file.getName();
+            } else if (file.isDirectory()) {
+                files[count++] = file.getName() + "/";
             }
         }
-        files = Arrays.copyOf(files, fileList.length - (fileList.length - count));
+//        files = Arrays.copyOf(files, fileList.length - (fileList.length - count));
         return files;
     }
 
     @Override
     public void actionPerformed(ActionEvent ae) {
+        
 
         String username = textUser.getText();
         String password = textPassword.getText();
@@ -187,6 +191,10 @@ public class MainWindow extends JFrame implements ActionListener {
                 logger.writeLog("Não foi possível se conectar ao servidor!", FTPLogger.ERR);
             }
         } else if (ae.getSource().equals(buttonDelete)) {
+
+            if (clientConnection == null) return;
+            if (!clientConnection.isConnected()) return;
+            
             List filesFromServerToBeDeleted = listServer.getSelectedValuesList();
             List filesFromClientToBeDeleted = listClient.getSelectedValuesList();
             if (filesFromClientToBeDeleted.isEmpty() && filesFromServerToBeDeleted.isEmpty()) {
@@ -196,13 +204,13 @@ public class MainWindow extends JFrame implements ActionListener {
             int option;
 
             if (!filesFromServerToBeDeleted.isEmpty()) {
-                message += "Remoto\n";
+                message += "  Remoto\n";
                 for (Object filename : filesFromServerToBeDeleted) {
                     message += "-" + (String) filename + "\n";
                 }
             }
             if (!filesFromClientToBeDeleted.isEmpty()) {
-                message += "\n-Local\n";
+                message += "\n  Local\n";
                 for (Object filename : filesFromClientToBeDeleted) {
                     message += "-" + (String) filename + "\n";
                 }
@@ -219,33 +227,92 @@ public class MainWindow extends JFrame implements ActionListener {
                 for (Object filename : filesFromClientToBeDeleted) {
                     File file = new File((String) filename);
                     file.delete();
+                    logger.writeLog("Arquivo " + file.getName() + " deletado com sucesso", FTPLogger.OUT);
                 }
-                listClient.setListData(this.getLocalFiles());
+                listClient.setListData(this.getLocalFiles(ROOT));
                 if (!filesFromServerToBeDeleted.isEmpty()) {
                     listServer.setListData(clientConnection.commandLIST());
                 }
             }
         } else if (ae.getSource().equals(buttonUpload)) {
+            if (clientConnection == null) return;
+            if (!clientConnection.isConnected()) return;
+
             List filesToBeUploaded = listClient.getSelectedValuesList();
             if (!filesToBeUploaded.isEmpty()) {
                 for (Object filename : filesToBeUploaded) {
-                    clientConnection.commandSTOR((String)filename);
+                    clientConnection.commandSTOR((String) filename);
                 }
                 listServer.setListData(clientConnection.commandLIST());
             }
-        }else if(ae.getSource().equals(buttonDownload)){
+        } else if (ae.getSource().equals(buttonDownload)) {
+            if (clientConnection == null) return;
+            if (!clientConnection.isConnected()) return;
+
             List filesToBeDownloaded = listServer.getSelectedValuesList();
             if (!filesToBeDownloaded.isEmpty()) {
                 for (Object filename : filesToBeDownloaded) {
-                    clientConnection.commandRETR((String)filename);
+                    clientConnection.commandRETR((String) filename);
                 }
-                listClient.setListData(this.getLocalFiles());
+                listClient.setListData(this.getLocalFiles(ROOT));
             }
         }
 
     }
-    private void updateStatus(){
-        
+
+    @Override
+    public void mouseClicked(MouseEvent me) {
+        if (clientConnection == null) {
+            return;
+        }
+        if (!clientConnection.isConnected()) {
+            return;
+        }
+        JList list = (JList) me.getSource();
+
+        if (list.equals(listClient)) {
+            if (me.getClickCount() == 2) {
+                String filename = (String) list.getSelectedValue();
+                File file = new File(filename);
+                if (file.isFile()) {
+                    clientConnection.commandSTOR(filename);
+                    listClient.setListData(this.getLocalFiles(ROOT));
+                } else if (file.isDirectory()) {
+                    listClient.setListData(this.getLocalFiles(ROOT+filename));
+                    listClient.setListData(this.getLocalFiles(ROOT+filename));
+                }
+                listServer.setListData(clientConnection.commandLIST());
+            }
+        } else if (list.equals(listServer)) {
+            if (me.getClickCount() == 2) {
+                String filename = (String)list.getSelectedValue();
+                File file = new File(filename);
+                if (!filename.contains("/")) {//Is a file
+                    clientConnection.commandRETR(filename);
+                }else if (filename.contains("/")){//Is a folder
+                    logger.writeLog("Pasta", FTPLogger.OUT);
+                }
+                listClient.setListData(this.getLocalFiles(ROOT));
+                listServer.setListData(clientConnection.commandLIST());
+            }
+        }
+
+    }
+
+    @Override
+    public void mousePressed(MouseEvent me) {
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent me) {
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent me) {
+    }
+
+    @Override
+    public void mouseExited(MouseEvent me) {
     }
 
 }
